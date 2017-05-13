@@ -20,13 +20,13 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="particle.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Shader.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="ParticleSystem.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="shader.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -35,6 +35,15 @@
       <Filter>资源文件</Filter>
     </None>
     <None Include="vShader.glsl">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="ReadMe.md">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="gShader.glsl">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="multiPoint.glsl">
       <Filter>资源文件</Filter>
     </None>
   </ItemGroup>

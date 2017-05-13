@@ -10,12 +10,71 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "Shader.h"
+#include "shader.h"
 #include "particle.h"
-#include "particleSystem.h"
+#include "particleSystem.h"s
+#include "Camera.h"
 
 using namespace std;
 using namespace glm;
+
+
+int keys[1024];
+Camera camera(glm::vec3(0.0f, 0.0, 100.0f));
+
+GLfloat deltaTime = 0.0f;
+GLfloat lastFrame = 0.0f;
+
+GLfloat lastX = 400, lastY = 300;
+bool firstMouse = true;
+
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode)
+{
+    if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, GL_TRUE);
+
+	if(key==GLFW_KEY_W || key==GLFW_KEY_S || key==GLFW_KEY_A || key==GLFW_KEY_D)
+    {
+        if(action == GLFW_PRESS)
+		{
+            keys[key] = true;
+		}
+        else if(action == GLFW_RELEASE)
+            keys[key] = false;	
+		
+    }
+}
+
+void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+{
+    if(firstMouse)
+    {
+        lastX = xpos;
+        lastY = ypos;
+        firstMouse = false;
+    }
+
+    GLfloat xoffset = xpos - lastX;
+    GLfloat yoffset = lastY - ypos;  
+    
+    lastX = xpos;
+    lastY = ypos;
+
+    camera.ProcessMouseMovement(xoffset, yoffset);
+}	
+
+void Do_Movement()
+{
+    // Camera controls
+    if(keys[GLFW_KEY_W])
+        camera.ProcessKeyboard(FORWARD, deltaTime);
+    if(keys[GLFW_KEY_S])
+        camera.ProcessKeyboard(BACKWARD, deltaTime);
+    if(keys[GLFW_KEY_A])
+        camera.ProcessKeyboard(LEFT, deltaTime);
+    if(keys[GLFW_KEY_D])
+        camera.ProcessKeyboard(RIGHT, deltaTime);
+}
 
 
 int main()
@@ -48,43 +107,54 @@ int main()
 
 	glEnable(GL_DEPTH_TEST);  //开启深度检测
 
+	glfwSetKeyCallback(window,key_callback);
+	glfwSetCursorPosCallback(window, mouse_callback);
+
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	mat4 model;
 	mat4 view;
 	mat4 projection;
 
 	model = mat4();
-	view = lookAt(vec3(0,0,100), vec3(0,0,0), vec3(0,1,0));
+	view = camera.GetViewMatrix();
 	projection = perspective(45.0f, (float)width/(float)hight, 1.0f, 1000.0f);
 	
-	//ParticleSystem(fireWorkType type,int numParticlePerWave,vec3 emitPosistion,int wave,float minLifeTime = 3.0f,float maxLifeTime = 6.0f,float interval = 0.05f,float speed = 10.0f,vec3 acceleration = vec3(0.0,-1.0,0.0))
-	//ParticleSystem pSystem(cylinder,500,vec3(0,0,0),6.0,0.05,15.0,vec3(0.0,-1.0,0.0));
-	ParticleSystem pSystem(ball,5000,vec3(0,0,0),1,3.0,3.0,1.0);
-	//ParticleSystem pSystem(cylinder,5000,vec3(0,0,0),3.0,1.0,20.0,vec3(0.0,-2.0,0.0));
+	//ParticleSystem pSystem(cone,point,200,vec3(0,0,0),6.0,6.0,3.0,vec3(0.0,-0.0,0.0));
+	
+	//ParticleSystem pSystem(ball,point,10000,vec3(0,0,0),3.0,3.0,20.0,vec3(0.0,-2.0,0.0));
+	ParticleSystem pSystem(cylinder,point,10000,vec3(0,0,0),3.0,6.0,20.0,vec3(0.0,-2.0,0.0));
+	
 	pSystem.generateParticles();
 
 	pSystem.setModel(model);
 	pSystem.setView(view);
 	pSystem.setProjection(projection);
 
-	pSystem.beforeRendering();
+	pSystem.initial();
 	
 	pSystem.setStartTime(glfwGetTime());
 
-	glEnable(GL_DEPTH_TEST);
+	//点的大小会随距离变化
+	glEnable(GL_PROGRAM_POINT_SIZE);
 
 	while(!glfwWindowShouldClose(window))
 	{
 		glfwPollEvents();
+
+		GLfloat currentFrame = glfwGetTime();
+		deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
+
+		Do_Movement();
+
+		view = camera.GetViewMatrix();
+		pSystem.setView(view);
 		
-		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+		glClear( GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
 		pSystem.rendering();
-		/*
-		glBindVertexArray(pSystem.VAO);
-		glDrawArrays(GL_POINTS,0,pSystem.numParticlePerWave);//6*6*pSystem.numParticlePerWave * pSystem.lifeTime / pSystem.interval);
-		glBindVertexArray(0);
-		*/
+		
 		glfwSwapBuffers(window);
 	}
 

@@ -11,7 +11,7 @@ class Shader
 {
 public:
 	GLuint program;
-	Shader(const char *vShaderPath,const char *fShaderPath);
+	Shader(const char *vShaderPath,const char *fShaderPath,const char *gShaderPath = nullptr);
 	void Use();
 
 private:
@@ -24,7 +24,7 @@ private:
 
 };
 
-Shader::Shader(const char *vShaderPath,const char *fShaderPath)
+Shader::Shader(const char *vShaderPath,const char *fShaderPath,const char *gShaderPath)
 {
 	GLuint vertexShader;
 	vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -43,10 +43,23 @@ Shader::Shader(const char *vShaderPath,const char *fShaderPath)
 	glCompileShader(fragmentShader);
     compileCheck(fragmentShader,"fragment");
 
+
 	program = glCreateProgram();
 
 	glAttachShader(program,vertexShader);
 	glAttachShader(program,fragmentShader);
+
+	if(gShaderPath!= nullptr)
+	{
+		GLuint geometryShader;
+		geometryShader = glCreateShader(GL_GEOMETRY_SHADER);
+		GLint glen;
+		char *geometryShaderSource = readShaderSource(gShaderPath,glen);
+		glShaderSource(geometryShader,1,&geometryShaderSource,&glen);
+		glCompileShader(geometryShader);
+		compileCheck(geometryShader,"geometry");
+		glAttachShader(program,geometryShader);
+	}
 
 	glLinkProgram(program);
 

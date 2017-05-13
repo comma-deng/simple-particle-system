@@ -85,14 +85,19 @@
     <ClCompile Include="源.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="particle.h" />
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="ParticleSystem.h" />
-    <ClInclude Include="Shader.h" />
+    <ClInclude Include="shader.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="fShader.glsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </None>
+    <None Include="gShader.glsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </None>
+    <None Include="multiPoint.glsl" />
+    <None Include="ReadMe.md" />
     <None Include="vShader.glsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </None>
