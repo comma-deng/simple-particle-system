@@ -12,7 +12,7 @@
 
 #include "shader.h"
 #include "particle.h"
-#include "particleSystem.h"s
+#include "particleSystem.h"
 #include "Camera.h"
 
 using namespace std;
@@ -105,8 +105,10 @@ int main()
 	glfwGetFramebufferSize(window,&width,&hight);
 	glViewport(0,0,width,hight);
 
-	glEnable(GL_DEPTH_TEST);  //开启深度检测
-
+	//glEnable(GL_DEPTH_TEST);  //开启深度检测
+	glEnable(GL_BLEND);
+	glClearColor(0.0,0.0,0.0,0.0);
+	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 	glfwSetKeyCallback(window,key_callback);
 	glfwSetCursorPosCallback(window, mouse_callback);
 
@@ -118,12 +120,12 @@ int main()
 
 	model = mat4();
 	view = camera.GetViewMatrix();
-	projection = perspective(45.0f, (float)width/(float)hight, 1.0f, 1000.0f);
+	projection = perspective(45.0f, (float)width/(float)hight, 1.0f, 200.0f);
 	
 	//ParticleSystem pSystem(cone,point,200,vec3(0,0,0),6.0,6.0,3.0,vec3(0.0,-0.0,0.0));
 	
 	//ParticleSystem pSystem(ball,point,10000,vec3(0,0,0),3.0,3.0,20.0,vec3(0.0,-2.0,0.0));
-	ParticleSystem pSystem(cylinder,point,10000,vec3(0,0,0),3.0,6.0,20.0,vec3(0.0,-2.0,0.0));
+	ParticleSystem pSystem(cylinder,point,10000,vec3(0,0,0),3.0,6.0,5.0,vec3(0.0,-1.0,0.0));
 	
 	pSystem.generateParticles();
 
@@ -132,6 +134,7 @@ int main()
 	pSystem.setProjection(projection);
 
 	pSystem.initial();
+	pSystem.setTexturePic("test.png");
 	
 	pSystem.setStartTime(glfwGetTime());
 
@@ -151,9 +154,9 @@ int main()
 		view = camera.GetViewMatrix();
 		pSystem.setView(view);
 		
-		glClear( GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
-		pSystem.rendering();
+		pSystem.rendering(camera.Position);
 		
 		glfwSwapBuffers(window);
 	}

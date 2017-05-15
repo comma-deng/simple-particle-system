@@ -29,6 +29,9 @@
     <ClInclude Include="shader.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="particleSystemParams.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="fShader.glsl">
@@ -46,5 +49,25 @@
     <None Include="multiPoint.glsl">
       <Filter>资源文件</Filter>
     </None>
+    <None Include="vShaderBillBoard.glsl">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="fShaderBillBoard.glsl">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="gShaderBillBoard.glsl">
+      <Filter>资源文件</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="sakura_0.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="project.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="test.jpeg">
+      <Filter>资源文件</Filter>
+    </Image>
   </ItemGroup>
 </Project>

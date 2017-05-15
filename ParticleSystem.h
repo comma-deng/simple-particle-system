@@ -3,7 +3,11 @@
 #include <glew.h>
 
 #include <glm/gtc/random.hpp>
+
+#include <SOIL.h>
+
 #include "Shader.h"
+#include "ParticleSystemParams.h"
 
 void quad(vector<vec3>& vertices,vector<vec3>& points,int a,int b,int c,int d)
 {
@@ -17,25 +21,12 @@ void quad(vector<vec3>& vertices,vector<vec3>& points,int a,int b,int c,int d)
 
 }
 
-enum particleSystemShape
-{
-	ball,
-	cone,
-	cylinder
-};
-
-enum particleType
-{
-	point,
-	triangle
-};
-
 class ParticleSystem
 {
 public:
 	ParticleSystem(particleSystemShape shape,particleType particletype,int numParticle,vec3 emitPosistion,float minLifeTime = 3.0f,float maxLifeTime = 6.0f,float speed = 10.0f,vec3 acceleration = vec3(0.0,-1.0,0.0))
 	{
-		this->shader = new Shader("vShader.glsl","fShader.glsl","gShader.glsl");
+		this->shader = new Shader("vShaderBillBoard.glsl","fShaderBillBoard.glsl","gShaderBillBoard.glsl");
 		this->numParticle = numParticle;
 		this->emitPosistion = emitPosistion;
 		this->minLifeTime = minLifeTime;
@@ -62,7 +53,6 @@ public:
 		default:
 			break;
 		}
-
 		glGenVertexArrays(1,&VAO);
 		glGenBuffers(1,&VBO);
 	}
@@ -72,7 +62,6 @@ public:
 		vector<vec3> points;
 		vector<vec3> velocities;
 		vector<float> life_times;
-
 
 		switch (particletype)
 		{
@@ -93,9 +82,6 @@ public:
 		default:
 			break;
 		}
-		
-		
-		
 		
 		switch (shape)
 		{
@@ -171,11 +157,7 @@ public:
 		glBufferSubData(GL_ARRAY_BUFFER,offset,numParticle * numPointPerParticle*sizeof(vec3),velocities.data());
 		glVertexAttribPointer(1,3,GL_FLOAT,GL_FALSE,sizeof(vec3),(GLvoid *)offset);
 		offset += numParticle * numPointPerParticle * sizeof(vec3);
-		/*
-		glBufferSubData(GL_ARRAY_BUFFER,offset,points.size() * sizeof(float),init_times.data());
-		glVertexAttribPointer(2,1,GL_FLOAT,GL_FALSE,sizeof(float),(GLvoid *)offset);
-		offset += points.size() * sizeof(float);
-		*/
+	
 		glBufferSubData(GL_ARRAY_BUFFER,offset,numParticle * numPointPerParticle * sizeof(float),life_times.data());
 		glVertexAttribPointer(2,1,GL_FLOAT,GL_FALSE,sizeof(float),(GLvoid *)offset);
 		
@@ -204,29 +186,59 @@ public:
 		GLuint initColorLoc = glGetUniformLocation(shader->program,"initColor");
 		GLuint finalColorLoc = glGetUniformLocation(shader->program,"finalColor");
 	
-		glUniform4f(initColorLoc,0.8,0.0,0.0,1.0);
-		glUniform4f(finalColorLoc,0.8,0.5,0.0,0.0);
-
-		//GLuint lifeTimeLoc = glGetUniformLocation(shader->program,"lifeTime");
-		//glUniform1f(lifeTimeLoc,lifeTime);
+		glUniform4f(initColorLoc,0.0,0.2,0.7,1.0);
+		glUniform4f(finalColorLoc,0.0,0.4,0.8,0.0);
 
 		GLuint accelerationLoc =  glGetUniformLocation(shader->program,"acceleration");
 		glUniform3fv(accelerationLoc,1,value_ptr(acceleration));
 	}
 
+	void setTexturePic(string Picpath)
+	{
+		glGenTextures(1,&texture);
+		int img_width=1,img_height=1;
 
-	void rendering()
+		unsigned char* image;
+		image = SOIL_load_image(Picpath.data(),&img_width,&img_height,0,SOIL_LOAD_RGBA);
+
+		glBindTexture(GL_TEXTURE_2D,texture);
+		glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,img_width,img_height,0,GL_RGBA,GL_UNSIGNED_BYTE,image);
+
+		//i意味着int，f意味着float。要设置的数值如果是整数类型的，就用i，否则用f
+		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT);  
+		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+
+		SOIL_free_image_data(image);
+
+		glBindTexture(GL_TEXTURE_2D,0);
+		glActiveTexture(GL_TEXTURE0);
+
+	}
+
+
+
+	void rendering(vec3 camPos)
 	{
 		float timediff = glfwGetTime() - startTime;
-		GLuint timeLoc = glGetUniformLocation(shader->program,"time"); 
+		
 
 		GLuint viewLoc = glGetUniformLocation(shader->program, "view");
 		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
 
+		GLuint timeLoc = glGetUniformLocation(shader->program,"time"); 
 		glUniform1f(timeLoc,timediff);
+
+		GLuint camPosLoc = glGetUniformLocation(shader->program, "camPos");
+		glUniform3fv(camPosLoc,1,value_ptr(camPos));
+
+		glBindTexture(GL_TEXTURE_2D,texture);
 		glBindVertexArray(VAO);
+
+
 		
-		glDrawArrays(primitiveType,0,numParticle);//6*6*pSystem.numParticle * pSystem.lifeTime / pSystem.interval);
+		glDrawArrays(primitiveType,0,numParticle);
 		glBindVertexArray(0);
 	}
 
@@ -257,6 +269,8 @@ public:
 
 	GLuint VAO;
 	GLuint VBO;
+	GLuint texture;
+
 	vec3 emitPosistion;
 
 	float minLifeTime;
@@ -276,4 +290,5 @@ public:
 	particleType particletype;
 
 	GLenum primitiveType;
+	
 };
